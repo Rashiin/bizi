@@ -25,7 +25,7 @@ python -m src.run_poc         # خروجی در پوشهٔ out/
 
 خروجی‌ها:
 - `out/PurchaseRequestProcess.bpmn` — در Bizagi Modeler از مسیر Import → BPMN باز می‌شود.
-- `out/preview.html` — بدون اینترنت و بدون Bizagi در هر مرورگری باز می‌شود.
+- `out/preview.html` — بدون اینترنت و بدون Bizagi در هر مرورگری باز می‌شود؛ نمودار SVG ثابت است و در چاپ/PDF/اسکرین‌شات کامل هم دیده می‌شود.
 - `out/spec.json` — مشخصات کامل فرآیند که لایهٔ UIA از آن می‌سازد.
 
 یک نسخهٔ آماده از همین خروجی‌ها در `examples/` هست.
@@ -40,4 +40,4 @@ python -m src.run_poc         # خروجی در پوشهٔ out/
 
 ## مجوزها
 
-`src/bpmn/vendor/` شامل bpmn-js (MIT، Camunda) و `tests/schemas/bpmn20/` شامل XSDهای رسمی BPMN 2.0 (OMG) است.
+`tests/schemas/bpmn20/` شامل XSDهای رسمی BPMN 2.0 (OMG) است.

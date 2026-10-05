@@ -5,6 +5,7 @@ from lxml import etree
 
 from src.bpmn.bpmn_builder import BPMN_NS, BPMNDI_NS, to_xml_bytes
 from src.bpmn.preview import build_preview_html
+from src.bpmn.svg_render import render_svg
 from src.design_layer.sample_purchase import build_sample_purchase
 from src.design_layer.spec_schema import FieldType, NodeType, ProcessSpec
 
@@ -111,7 +112,12 @@ def test_spec_json_roundtrip(spec):
     assert again == spec
 
 
-def test_preview_is_self_contained(spec):
+def test_preview_is_static_and_draws_every_node(spec):
     html = build_preview_html(spec)
-    assert "BpmnJS" in html and "<script src=" not in html
+    assert "<script" not in html  # must render in print/PDF/screenshot tools without JS
     assert "فرم ثبت درخواست خرید" in html
+    svg = etree.fromstring(render_svg(spec).encode("utf-8"))  # well-formed XML
+    texts = " ".join(t.text or "" for t in svg.iter("{http://www.w3.org/2000/svg}text"))
+    for n in spec.nodes:
+        for word in n.label_fa.split():
+            assert word in texts, n.name

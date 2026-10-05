@@ -248,8 +248,43 @@ def _n(v: float) -> str:
     return str(int(round(v)))
 
 
-def _add_diagram(defs: etree._Element, spec: ProcessSpec) -> None:
+@dataclass
+class Geometry:
+    """Everything needed to draw the diagram; shared by BPMNDI and the SVG preview."""
+
+    pool: _Box
+    lanes: dict[str, _Box]  # role name -> lane box
+    nodes: dict[str, _Box]  # node name -> shape box
+    node_labels: dict[str, _Box]  # node name -> explicit label box (gateways)
+    edges: dict[str, list[tuple[float, float]]]  # flow name -> waypoints
+    edge_labels: dict[str, _Box]  # flow name -> label box
+
+
+def diagram_geometry(spec: ProcessSpec) -> Geometry:
     boxes, lane_boxes, pool = _layout(spec)
+    node_labels = {
+        # name to the upper right, clear of the top/bottom exits
+        n.name: _Box(boxes[n.name].x + boxes[n.name].w + 2, boxes[n.name].y - 16, 60, 14)
+        for n in spec.nodes
+        if n.type == NodeType.EXCLUSIVE_GATEWAY
+    }
+    edges: dict[str, list[tuple[float, float]]] = {}
+    edge_labels: dict[str, _Box] = {}
+    for f in spec.flows:
+        src_is_gw = spec.node(f.source).type == NodeType.EXCLUSIVE_GATEWAY
+        points = _waypoints(boxes[f.source], boxes[f.target], src_is_gw)
+        edges[f.name] = points
+        if f.label_fa:  # next to the first segment
+            (x0, y0), (x1, y1) = points[0], points[1]
+            if x0 == x1:  # vertical exit
+                edge_labels[f.name] = _Box(x0 + 4, y0 + (16 if y1 > y0 else -30), 30, 14)
+            else:
+                edge_labels[f.name] = _Box(x0 + 6, y0 - 18, 30, 14)
+    return Geometry(pool, lane_boxes, boxes, node_labels, edges, edge_labels)
+
+
+def _add_diagram(defs: etree._Element, spec: ProcessSpec) -> None:
+    geo = diagram_geometry(spec)
     diagram = etree.SubElement(defs, _di(BPMNDI_NS, "BPMNDiagram"), id=f"Diagram_{spec.name}", name=spec.label_fa)
     plane = etree.SubElement(
         diagram, _di(BPMNDI_NS, "BPMNPlane"), id=f"Plane_{spec.name}", bpmnElement=f"Collaboration_{spec.name}"
@@ -259,8 +294,8 @@ def _add_diagram(defs: etree._Element, spec: ProcessSpec) -> None:
         plane, _di(BPMNDI_NS, "BPMNShape"), id=f"Participant_{spec.name}_di",
         bpmnElement=f"Participant_{spec.name}", isHorizontal="true",
     )
-    _bounds(shape, pool)
-    for role, box in lane_boxes.items():
+    _bounds(shape, geo.pool)
+    for role, box in geo.lanes.items():
         shape = etree.SubElement(
             plane, _di(BPMNDI_NS, "BPMNShape"), id=f"Lane_{role}_di", bpmnElement=f"Lane_{role}", isHorizontal="true"
         )
@@ -271,24 +306,16 @@ def _add_diagram(defs: etree._Element, spec: ProcessSpec) -> None:
         if n.type == NodeType.EXCLUSIVE_GATEWAY:
             attrs["isMarkerVisible"] = "true"
         shape = etree.SubElement(plane, _di(BPMNDI_NS, "BPMNShape"), **attrs)
-        box = boxes[n.name]
-        _bounds(shape, box)
-        if n.type == NodeType.EXCLUSIVE_GATEWAY:  # name to the upper right, clear of top/bottom exits
-            _label(shape, _Box(box.x + box.w + 2, box.y - 16, 60, 14))
+        _bounds(shape, geo.nodes[n.name])
+        if n.name in geo.node_labels:
+            _label(shape, geo.node_labels[n.name])
 
     for f in spec.flows:
         edge = etree.SubElement(plane, _di(BPMNDI_NS, "BPMNEdge"), id=f"{f.name}_di", bpmnElement=f.name)
-        src_is_gw = spec.node(f.source).type == NodeType.EXCLUSIVE_GATEWAY
-        points = _waypoints(boxes[f.source], boxes[f.target], src_is_gw)
-        for x, y in points:
+        for x, y in geo.edges[f.name]:
             etree.SubElement(edge, _di(DI_NS, "waypoint"), x=_n(x), y=_n(y))
-        if f.label_fa:  # next to the first segment
-            (x0, y0), (x1, y1) = points[0], points[1]
-            if x0 == x1:  # vertical exit
-                lbl = _Box(x0 + 4, (y0 + (16 if y1 > y0 else -30)), 30, 14)
-            else:
-                lbl = _Box(x0 + 6, y0 - 18, 30, 14)
-            _label(edge, lbl)
+        if f.name in geo.edge_labels:
+            _label(edge, geo.edge_labels[f.name])
 
 
 def to_xml_bytes(spec: ProcessSpec) -> bytes:

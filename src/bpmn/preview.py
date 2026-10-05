@@ -1,20 +1,18 @@
 """Self-contained HTML preview of a ProcessSpec: BPMN diagram + data model + forms + rules.
 
-Runs on any OS (no Bizagi needed) and works offline: bpmn-js is inlined from
-src/bpmn/vendor. Useful for reviewing the design layer before it is built in Studio.
+Runs on any OS (no Bizagi needed), works offline and needs no JavaScript:
+the diagram is a static SVG, so print/PDF/full-page screenshots always show it.
+Useful for reviewing the design layer before it is built in Studio.
 """
 
 from __future__ import annotations
 
-import json
 import re
 from html import escape
 from pathlib import Path
 
-from src.bpmn.bpmn_builder import to_xml_bytes
+from src.bpmn.svg_render import SVG_CSS, render_svg
 from src.design_layer.spec_schema import DataField, EntityKind, FieldType, ProcessSpec, RuleKind
-
-VENDOR = Path(__file__).parent / "vendor"
 
 TYPE_FA = {
     FieldType.STRING: "متن کوتاه",
@@ -37,22 +35,24 @@ RULE_FA = {
 }
 
 CSS = """
-:root{--bg:#f7f7f8;--card:#fff;--ink:#1d1d1f;--muted:#6b6b75;--line:#e3e3e8;--accent:#2f6fde;--ro:#f1f1f4}
-@media (prefers-color-scheme:dark){:root{--bg:#141416;--card:#1e1e22;--ink:#ececf1;--muted:#a0a0ab;--line:#33333a;--accent:#7aa5ff;--ro:#26262b}}
+:root{--bg:#f7f7f8;--card:#fff;--ink:#1d1d1f;--muted:#6b6b75;--line:#e3e3e8;--accent:#2f6fde;--ro:#f1f1f4;--lane:#fafafb}
+@media (prefers-color-scheme:dark){:root{--bg:#141416;--card:#1e1e22;--ink:#ececf1;--muted:#a0a0ab;--line:#33333a;--accent:#7aa5ff;--ro:#26262b;--lane:#232328}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.7 Vazirmatn,Tahoma,"Segoe UI",sans-serif}
 main{max-width:1200px;margin:0 auto;padding:24px 16px 64px}
 h1{font-size:24px;margin:0 0 4px}h2{font-size:19px;margin:36px 0 12px}h3{font-size:16px;margin:0 0 10px}
 .muted{color:var(--muted)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
-#canvas{height:min(620px,70vh);background:#fff;border:1px solid var(--line);border-radius:10px;direction:ltr}
+.diagram{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 th{color:var(--muted);font-weight:600}
 code,pre{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
 pre{direction:ltr;text-align:left;background:var(--ro);padding:10px;border-radius:8px;overflow:auto;margin:6px 0 0}
 .tag{display:inline-block;font-size:12px;padding:0 8px;border-radius:99px;background:var(--ro);color:var(--muted);margin-inline-start:6px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(360px,100%),1fr));gap:14px}
+.grid>*{min-width:0}
+td code{word-break:break-all}
 .form .row{display:grid;grid-template-columns:160px 1fr;gap:8px;align-items:start;margin-bottom:8px}
 .form label{color:var(--muted);font-size:14px;padding-top:6px}
 .form input:not([type=radio]),.form select,.form textarea{width:100%;font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
@@ -61,7 +61,7 @@ pre{direction:ltr;text-align:left;background:var(--ro);padding:10px;border-radiu
 .req::after{content:" *";color:#d33}
 .mini th,.mini td{font-size:12px;padding:4px}
 .form .row.wide{grid-template-columns:1fr}
-@media (max-width:600px){.form .row{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
+@media (max-width:600px){.form .row{grid-template-columns:1fr}}
 """
 
 
@@ -173,45 +173,26 @@ def _section_roles(spec: ProcessSpec) -> str:
 
 
 def build_preview_html(spec: ProcessSpec) -> str:
-    xml = to_xml_bytes(spec).decode("utf-8")
-    viewer_js = (VENDOR / "bpmn-navigated-viewer.production.min.js").read_text(encoding="utf-8")
-    viewer_css = (VENDOR / "diagram-js.css").read_text(encoding="utf-8") + (VENDOR / "bpmn-js.css").read_text(
-        encoding="utf-8"
-    )
-    xml_js = json.dumps(xml).replace("</", "<\\/")
     return f"""<!doctype html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{escape(spec.label_fa)}</title>
-<style>{viewer_css}</style>
-<style>{CSS}</style>
+<style>{CSS}{SVG_CSS}</style>
 </head>
 <body>
-<!-- body stays LTR: bpmn-js measures label text in document.body -->
-<main dir="rtl">
+<main>
 <h1>{escape(spec.label_fa)}</h1>
 <p class="muted">{escape(spec.description_fa)}</p>
 <p class="muted">{len(spec.entities)} موجودیت · {len(spec.forms)} فرم · {len(spec.rules)} قانون · {len(spec.roles)} نقش</p>
 <h2>نمودار فرآیند (BPMN 2.0)</h2>
-<div id="canvas"></div>
+<div class="diagram" dir="ltr">{render_svg(spec)}</div>
 {_section_roles(spec)}
 {_section_data_model(spec)}
 {_section_forms(spec)}
 {_section_rules(spec)}
 </main>
-<script>{viewer_js}</script>
-<script>
-const xml = {xml_js};
-const viewer = new BpmnJS({{ container: '#canvas' }});
-const box = document.getElementById('canvas');
-// Skip while the canvas has no size (hidden, or mid-resize during a page capture):
-// fitting into 0x0 yields a NaN transform that bpmn-js never recovers from.
-const fit = () => {{ if (box.clientWidth > 0 && box.clientHeight > 0) viewer.get('canvas').zoom('fit-viewport', 'auto'); }};
-viewer.importXML(xml).then(() => {{ fit(); new ResizeObserver(fit).observe(box); }})
-  .catch(err => {{ document.getElementById('canvas').textContent = 'خطا در نمایش BPMN: ' + err.message; }});
-</script>
 </body>
 </html>
 """
