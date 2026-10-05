@@ -7,6 +7,7 @@ src/bpmn/vendor. Useful for reviewing the design layer before it is built in Stu
 from __future__ import annotations
 
 import json
+import re
 from html import escape
 from pathlib import Path
 
@@ -44,7 +45,7 @@ main{max-width:1200px;margin:0 auto;padding:24px 16px 64px}
 h1{font-size:24px;margin:0 0 4px}h2{font-size:19px;margin:36px 0 12px}h3{font-size:16px;margin:0 0 10px}
 .muted{color:var(--muted)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
-#canvas{height:620px;background:#fff;border:1px solid var(--line);border-radius:10px;direction:ltr}
+#canvas{height:min(620px,70vh);background:#fff;border:1px solid var(--line);border-radius:10px;direction:ltr}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 th{color:var(--muted);font-weight:600}
@@ -54,8 +55,9 @@ pre{direction:ltr;text-align:left;background:var(--ro);padding:10px;border-radiu
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px}
 .form .row{display:grid;grid-template-columns:160px 1fr;gap:8px;align-items:start;margin-bottom:8px}
 .form label{color:var(--muted);font-size:14px;padding-top:6px}
-.form input,.form select,.form textarea{width:100%;font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
+.form input:not([type=radio]),.form select,.form textarea{width:100%;font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
 .form [disabled]{background:var(--ro)}
+.radios{display:flex;gap:18px;padding-top:6px}.radios label{color:var(--ink);padding:0}
 .req::after{content:" *";color:#d33}
 .mini th,.mini td{font-size:12px;padding:4px}
 .form .row.wide{grid-template-columns:1fr}
@@ -70,7 +72,10 @@ def _control_html(spec: ProcessSpec, field: DataField, readonly: bool) -> str:
     if field.type == FieldType.TEXT:
         return f"<textarea rows=2{dis}></textarea>"
     if field.type == FieldType.BOOLEAN:
-        return f'<span><label><input type=radio name="{field.name}"{dis}> بله</label> &nbsp; <label><input type=radio name="{field.name}"{dis}> خیر</label></span>'
+        return (
+            f'<span class="radios"><label><input type=radio name="{field.name}"{dis}> بله</label>'
+            f'<label><input type=radio name="{field.name}"{dis}> خیر</label></span>'
+        )
     if field.type == FieldType.ENTITY_REF:
         ref = spec.entity(field.ref_entity)  # type: ignore[arg-type]
         opts = "".join(f"<option>{escape(v)}</option>" for v in ref.values.values())
@@ -132,6 +137,14 @@ def _section_forms(spec: ProcessSpec) -> str:
     return "".join(out)
 
 
+PERSIAN_LITERAL = re.compile(r'"([^"\n]*[\u0600-\u06FF][^"\n]*)"')
+
+
+def _code_html(code: str) -> str:
+    """Escape code; wrap Persian string literals in <bdi> so punctuation stays inside the quotes."""
+    return PERSIAN_LITERAL.sub(r'"<bdi>\1</bdi>"', escape(code, quote=False))
+
+
 def _section_rules(spec: ProcessSpec) -> str:
     out = ["<h2>قوانین کسب‌وکار</h2>"]
     for r in spec.rules:
@@ -141,7 +154,7 @@ def _section_rules(spec: ProcessSpec) -> str:
         out.append(
             f'<div class="card"><h3>{escape(r.label_fa)} <code>{r.name}</code>'
             f'<span class="tag">{RULE_FA[r.kind]}</span></h3>'
-            f'<div class="muted">روی: {escape(target)}</div><pre>{escape(r.code)}</pre></div>'
+            f'<div class="muted">روی: {escape(target)}</div><pre>{_code_html(r.code)}</pre></div>'
         )
     return "".join(out)
 
@@ -192,7 +205,8 @@ def build_preview_html(spec: ProcessSpec) -> str:
 <script>
 const xml = {xml_js};
 const viewer = new BpmnJS({{ container: '#canvas' }});
-viewer.importXML(xml).then(() => viewer.get('canvas').zoom('fit-viewport'))
+const fit = () => viewer.get('canvas').zoom('fit-viewport', 'auto');
+viewer.importXML(xml).then(() => {{ fit(); new ResizeObserver(fit).observe(document.getElementById('canvas')); }})
   .catch(err => {{ document.getElementById('canvas').textContent = 'خطا در نمایش BPMN: ' + err.message; }});
 </script>
 </body>
