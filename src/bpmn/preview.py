@@ -205,8 +205,11 @@ def build_preview_html(spec: ProcessSpec) -> str:
 <script>
 const xml = {xml_js};
 const viewer = new BpmnJS({{ container: '#canvas' }});
-const fit = () => viewer.get('canvas').zoom('fit-viewport', 'auto');
-viewer.importXML(xml).then(() => {{ fit(); new ResizeObserver(fit).observe(document.getElementById('canvas')); }})
+const box = document.getElementById('canvas');
+// Skip while the canvas has no size (hidden, or mid-resize during a page capture):
+// fitting into 0x0 yields a NaN transform that bpmn-js never recovers from.
+const fit = () => {{ if (box.clientWidth > 0 && box.clientHeight > 0) viewer.get('canvas').zoom('fit-viewport', 'auto'); }};
+viewer.importXML(xml).then(() => {{ fit(); new ResizeObserver(fit).observe(box); }})
   .catch(err => {{ document.getElementById('canvas').textContent = 'خطا در نمایش BPMN: ' + err.message; }});
 </script>
 </body>
