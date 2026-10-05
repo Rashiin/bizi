@@ -32,6 +32,17 @@ td code{word-break:break-all}
 .mini th,.mini td{font-size:12px;padding:4px}
 .form .row.wide{grid-template-columns:1fr}
 @media (max-width:600px){.form .row{grid-template-columns:1fr}}
+pre bdi{font-family:Vazirmatn,Tahoma,"Segoe UI",sans-serif}
+@page{size:A4 landscape;margin:12mm}
+@media print{
+  body{background:#fff}
+  main{max-width:none;padding:0}
+  .diagram .bpmn{min-width:0}
+  .diagram{overflow:visible;break-inside:avoid}
+  pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  .card{break-inside:avoid}
+  h2{break-after:avoid}
+}
 
 .bpmn{display:block;width:100%;min-width:860px;height:auto}
 .bpmn text{fill:var(--ink)}
