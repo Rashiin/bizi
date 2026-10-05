@@ -1,0 +1,12 @@
+# Core (any OS)
+pydantic>=2.6
+lxml>=5.0
+pyyaml>=6.0
+pytest>=8.0
+
+# Planner (LLM design layer)
+anthropic>=0.40
+
+# Windows-only stages (UIA build + SQL verification)
+pywinauto>=0.6.8; sys_platform == "win32"
+pyodbc>=5.0; sys_platform == "win32"

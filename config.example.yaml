@@ -1,0 +1,16 @@
+# Copy to config.yaml (git-ignored) and fill in on the Windows machine.
+
+bizagi:
+  studio_exe: "C:/Program Files/Bizagi/Bizagi Studio/BizAgiStudio.exe"
+  project_name: "PurchasePoC"
+  # Filled from the output of src/uia/inspect_ids.py — never by screen coordinates or Persian label text.
+  automation_ids: {}
+
+sql:
+  # Read-only login is enough; the PoC never writes to the Bizagi database.
+  connection_string: "DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost\\SQLEXPRESS;DATABASE=PurchasePoC;Trusted_Connection=yes;TrustServerCertificate=yes"
+
+llm:
+  # Or set ANTHROPIC_API_KEY in the environment instead.
+  api_key: ""
+  model: "claude-sonnet-5-5"

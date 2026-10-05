@@ -1,0 +1,850 @@
+{
+  "name": "PurchaseRequestProcess",
+  "label_fa": "فرآیند درخواست خرید",
+  "description_fa": "درخواست خرید کالا با سه سطح تأیید: مدیر واحد، مدیر مالی و مدیرعامل.",
+  "process_entity": "PurchaseRequest",
+  "entities": [
+    {
+      "name": "Department",
+      "label_fa": "واحد سازمانی",
+      "kind": "parameter",
+      "fields": [
+        {
+          "name": "Code",
+          "label_fa": "کد",
+          "type": "string",
+          "required": true,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": 20
+        },
+        {
+          "name": "Name",
+          "label_fa": "نام",
+          "type": "string",
+          "required": true,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": 100
+        }
+      ],
+      "values": {
+        "FIN": "مالی",
+        "IT": "فناوری اطلاعات",
+        "OPS": "عملیات",
+        "HR": "منابع انسانی"
+      }
+    },
+    {
+      "name": "UnitOfMeasure",
+      "label_fa": "واحد سنجش",
+      "kind": "parameter",
+      "fields": [
+        {
+          "name": "Code",
+          "label_fa": "کد",
+          "type": "string",
+          "required": true,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": 20
+        },
+        {
+          "name": "Name",
+          "label_fa": "نام",
+          "type": "string",
+          "required": true,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": 50
+        }
+      ],
+      "values": {
+        "PCS": "عدد",
+        "BOX": "جعبه",
+        "KG": "کیلوگرم",
+        "M": "متر"
+      }
+    },
+    {
+      "name": "PurchaseItem",
+      "label_fa": "قلم خرید",
+      "kind": "master",
+      "fields": [
+        {
+          "name": "ItemName",
+          "label_fa": "شرح کالا",
+          "type": "string",
+          "required": true,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": 200
+        },
+        {
+          "name": "Quantity",
+          "label_fa": "تعداد",
+          "type": "decimal",
+          "required": true,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": null
+        },
+        {
+          "name": "Unit",
+          "label_fa": "واحد",
+          "type": "entity_ref",
+          "required": true,
+          "ref_entity": "UnitOfMeasure",
+          "calendar": null,
+          "max_length": null
+        },
+        {
+          "name": "UnitPrice",
+          "label_fa": "قیمت واحد (ریال)",
+          "type": "currency",
+          "required": true,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": null
+        },
+        {
+          "name": "LineTotal",
+          "label_fa": "مبلغ کل ردیف (ریال)",
+          "type": "currency",
+          "required": false,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": null
+        }
+      ],
+      "values": {}
+    },
+    {
+      "name": "PurchaseRequest",
+      "label_fa": "درخواست خرید",
+      "kind": "process",
+      "fields": [
+        {
+          "name": "RequestNumber",
+          "label_fa": "شماره درخواست",
+          "type": "string",
+          "required": false,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": 30
+        },
+        {
+          "name": "RequestDate",
+          "label_fa": "تاریخ درخواست",
+          "type": "date",
+          "required": false,
+          "ref_entity": null,
+          "calendar": "jalali",
+          "max_length": null
+        },
+        {
+          "name": "RequesterName",
+          "label_fa": "نام درخواست‌کننده",
+          "type": "string",
+          "required": false,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": 100
+        },
+        {
+          "name": "Department",
+          "label_fa": "واحد درخواست‌کننده",
+          "type": "entity_ref",
+          "required": true,
+          "ref_entity": "Department",
+          "calendar": null,
+          "max_length": null
+        },
+        {
+          "name": "NeededByDate",
+          "label_fa": "تاریخ نیاز",
+          "type": "date",
+          "required": true,
+          "ref_entity": null,
+          "calendar": "jalali",
+          "max_length": null
+        },
+        {
+          "name": "Description",
+          "label_fa": "شرح درخواست",
+          "type": "text",
+          "required": true,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": null
+        },
+        {
+          "name": "Items",
+          "label_fa": "اقلام درخواستی",
+          "type": "collection",
+          "required": false,
+          "ref_entity": "PurchaseItem",
+          "calendar": null,
+          "max_length": null
+        },
+        {
+          "name": "TotalAmount",
+          "label_fa": "مبلغ کل (ریال)",
+          "type": "currency",
+          "required": false,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": null
+        },
+        {
+          "name": "ManagerApproved",
+          "label_fa": "تأیید مدیر واحد",
+          "type": "boolean",
+          "required": false,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": null
+        },
+        {
+          "name": "ManagerComment",
+          "label_fa": "توضیحات مدیر واحد",
+          "type": "text",
+          "required": false,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": null
+        },
+        {
+          "name": "ManagerDecisionDate",
+          "label_fa": "تاریخ تصمیم مدیر واحد",
+          "type": "date",
+          "required": false,
+          "ref_entity": null,
+          "calendar": "jalali",
+          "max_length": null
+        },
+        {
+          "name": "FinanceApproved",
+          "label_fa": "تأیید مدیر مالی",
+          "type": "boolean",
+          "required": false,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": null
+        },
+        {
+          "name": "FinanceComment",
+          "label_fa": "توضیحات مدیر مالی",
+          "type": "text",
+          "required": false,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": null
+        },
+        {
+          "name": "FinanceDecisionDate",
+          "label_fa": "تاریخ تصمیم مدیر مالی",
+          "type": "date",
+          "required": false,
+          "ref_entity": null,
+          "calendar": "jalali",
+          "max_length": null
+        },
+        {
+          "name": "CeoApproved",
+          "label_fa": "تأیید مدیرعامل",
+          "type": "boolean",
+          "required": false,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": null
+        },
+        {
+          "name": "CeoComment",
+          "label_fa": "توضیحات مدیرعامل",
+          "type": "text",
+          "required": false,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": null
+        },
+        {
+          "name": "CeoDecisionDate",
+          "label_fa": "تاریخ تصمیم مدیرعامل",
+          "type": "date",
+          "required": false,
+          "ref_entity": null,
+          "calendar": "jalali",
+          "max_length": null
+        },
+        {
+          "name": "PurchaseOrderNumber",
+          "label_fa": "شماره سفارش خرید",
+          "type": "string",
+          "required": false,
+          "ref_entity": null,
+          "calendar": null,
+          "max_length": 30
+        },
+        {
+          "name": "PurchaseDate",
+          "label_fa": "تاریخ خرید",
+          "type": "date",
+          "required": false,
+          "ref_entity": null,
+          "calendar": "jalali",
+          "max_length": null
+        }
+      ],
+      "values": {}
+    }
+  ],
+  "roles": [
+    {
+      "name": "Requester",
+      "label_fa": "درخواست‌کننده",
+      "description_fa": "کارمند ثبت‌کنندهٔ درخواست خرید"
+    },
+    {
+      "name": "DepartmentManager",
+      "label_fa": "مدیر واحد",
+      "description_fa": ""
+    },
+    {
+      "name": "FinanceManager",
+      "label_fa": "مدیر مالی",
+      "description_fa": ""
+    },
+    {
+      "name": "CEO",
+      "label_fa": "مدیرعامل",
+      "description_fa": ""
+    },
+    {
+      "name": "ProcurementOfficer",
+      "label_fa": "کارشناس تدارکات",
+      "description_fa": ""
+    }
+  ],
+  "nodes": [
+    {
+      "name": "StartPurchase",
+      "label_fa": "شروع",
+      "type": "start",
+      "role": "Requester"
+    },
+    {
+      "name": "RegisterRequest",
+      "label_fa": "ثبت درخواست خرید",
+      "type": "user_task",
+      "role": "Requester"
+    },
+    {
+      "name": "ManagerApproval",
+      "label_fa": "تأیید مدیر واحد",
+      "type": "user_task",
+      "role": "DepartmentManager"
+    },
+    {
+      "name": "ManagerDecision",
+      "label_fa": "تأیید شد؟",
+      "type": "exclusive_gateway",
+      "role": "DepartmentManager"
+    },
+    {
+      "name": "FinanceApproval",
+      "label_fa": "تأیید مدیر مالی",
+      "type": "user_task",
+      "role": "FinanceManager"
+    },
+    {
+      "name": "FinanceDecision",
+      "label_fa": "تأیید شد؟",
+      "type": "exclusive_gateway",
+      "role": "FinanceManager"
+    },
+    {
+      "name": "CeoApproval",
+      "label_fa": "تأیید مدیرعامل",
+      "type": "user_task",
+      "role": "CEO"
+    },
+    {
+      "name": "CeoDecision",
+      "label_fa": "تأیید شد؟",
+      "type": "exclusive_gateway",
+      "role": "CEO"
+    },
+    {
+      "name": "PerformPurchase",
+      "label_fa": "انجام خرید و ثبت سفارش",
+      "type": "user_task",
+      "role": "ProcurementOfficer"
+    },
+    {
+      "name": "PurchaseCompleted",
+      "label_fa": "خرید انجام شد",
+      "type": "end",
+      "role": "ProcurementOfficer"
+    },
+    {
+      "name": "RequestRejected",
+      "label_fa": "درخواست رد شد",
+      "type": "end",
+      "role": "Requester"
+    }
+  ],
+  "flows": [
+    {
+      "name": "Flow_Start_to_Register",
+      "source": "StartPurchase",
+      "target": "RegisterRequest",
+      "label_fa": "",
+      "condition_rule": null,
+      "is_default": false
+    },
+    {
+      "name": "Flow_Register_to_Manager",
+      "source": "RegisterRequest",
+      "target": "ManagerApproval",
+      "label_fa": "",
+      "condition_rule": null,
+      "is_default": false
+    },
+    {
+      "name": "Flow_ManagerApproval_to_ManagerDecision",
+      "source": "ManagerApproval",
+      "target": "ManagerDecision",
+      "label_fa": "",
+      "condition_rule": null,
+      "is_default": false
+    },
+    {
+      "name": "Flow_ManagerDecision_Yes",
+      "source": "ManagerDecision",
+      "target": "FinanceApproval",
+      "label_fa": "بله",
+      "condition_rule": "ManagerApproved",
+      "is_default": false
+    },
+    {
+      "name": "Flow_ManagerDecision_No",
+      "source": "ManagerDecision",
+      "target": "RequestRejected",
+      "label_fa": "خیر",
+      "condition_rule": null,
+      "is_default": true
+    },
+    {
+      "name": "Flow_FinanceApproval_to_FinanceDecision",
+      "source": "FinanceApproval",
+      "target": "FinanceDecision",
+      "label_fa": "",
+      "condition_rule": null,
+      "is_default": false
+    },
+    {
+      "name": "Flow_FinanceDecision_Yes",
+      "source": "FinanceDecision",
+      "target": "CeoApproval",
+      "label_fa": "بله",
+      "condition_rule": "FinanceApproved",
+      "is_default": false
+    },
+    {
+      "name": "Flow_FinanceDecision_No",
+      "source": "FinanceDecision",
+      "target": "RequestRejected",
+      "label_fa": "خیر",
+      "condition_rule": null,
+      "is_default": true
+    },
+    {
+      "name": "Flow_CeoApproval_to_CeoDecision",
+      "source": "CeoApproval",
+      "target": "CeoDecision",
+      "label_fa": "",
+      "condition_rule": null,
+      "is_default": false
+    },
+    {
+      "name": "Flow_CeoDecision_Yes",
+      "source": "CeoDecision",
+      "target": "PerformPurchase",
+      "label_fa": "بله",
+      "condition_rule": "CeoApproved",
+      "is_default": false
+    },
+    {
+      "name": "Flow_CeoDecision_No",
+      "source": "CeoDecision",
+      "target": "RequestRejected",
+      "label_fa": "خیر",
+      "condition_rule": null,
+      "is_default": true
+    },
+    {
+      "name": "Flow_Purchase_to_End",
+      "source": "PerformPurchase",
+      "target": "PurchaseCompleted",
+      "label_fa": "",
+      "condition_rule": null,
+      "is_default": false
+    }
+  ],
+  "forms": [
+    {
+      "name": "FormRegisterRequest",
+      "label_fa": "فرم ثبت درخواست خرید",
+      "task": "RegisterRequest",
+      "controls": [
+        {
+          "xpath": "PurchaseRequest.RequestNumber",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.RequestDate",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.RequesterName",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.Department",
+          "readonly": false,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.NeededByDate",
+          "readonly": false,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.Description",
+          "readonly": false,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.Items",
+          "readonly": false,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.TotalAmount",
+          "readonly": true,
+          "required": null
+        }
+      ],
+      "rtl": true
+    },
+    {
+      "name": "FormManagerApproval",
+      "label_fa": "فرم تأیید مدیر واحد",
+      "task": "ManagerApproval",
+      "controls": [
+        {
+          "xpath": "PurchaseRequest.RequestNumber",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.RequestDate",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.Department",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.Description",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.Items",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.TotalAmount",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.ManagerApproved",
+          "readonly": false,
+          "required": true
+        },
+        {
+          "xpath": "PurchaseRequest.ManagerComment",
+          "readonly": false,
+          "required": null
+        }
+      ],
+      "rtl": true
+    },
+    {
+      "name": "FormFinanceApproval",
+      "label_fa": "فرم تأیید مدیر مالی",
+      "task": "FinanceApproval",
+      "controls": [
+        {
+          "xpath": "PurchaseRequest.RequestNumber",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.RequestDate",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.Department",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.Description",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.Items",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.TotalAmount",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.ManagerApproved",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.ManagerComment",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.FinanceApproved",
+          "readonly": false,
+          "required": true
+        },
+        {
+          "xpath": "PurchaseRequest.FinanceComment",
+          "readonly": false,
+          "required": null
+        }
+      ],
+      "rtl": true
+    },
+    {
+      "name": "FormCeoApproval",
+      "label_fa": "فرم تأیید مدیرعامل",
+      "task": "CeoApproval",
+      "controls": [
+        {
+          "xpath": "PurchaseRequest.RequestNumber",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.RequestDate",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.Department",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.Description",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.Items",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.TotalAmount",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.ManagerApproved",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.ManagerComment",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.FinanceApproved",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.FinanceComment",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.CeoApproved",
+          "readonly": false,
+          "required": true
+        },
+        {
+          "xpath": "PurchaseRequest.CeoComment",
+          "readonly": false,
+          "required": null
+        }
+      ],
+      "rtl": true
+    },
+    {
+      "name": "FormPerformPurchase",
+      "label_fa": "فرم انجام خرید",
+      "task": "PerformPurchase",
+      "controls": [
+        {
+          "xpath": "PurchaseRequest.RequestNumber",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.Department",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.Items",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.TotalAmount",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.CeoComment",
+          "readonly": true,
+          "required": null
+        },
+        {
+          "xpath": "PurchaseRequest.PurchaseOrderNumber",
+          "readonly": false,
+          "required": true
+        }
+      ],
+      "rtl": true
+    }
+  ],
+  "rules": [
+    {
+      "name": "InitRequest",
+      "label_fa": "مقداردهی اولیهٔ درخواست",
+      "kind": "on_enter",
+      "attached_to": "RegisterRequest",
+      "code": "<PurchaseRequest.RequestDate> = DateTime.Today;\n<PurchaseRequest.RequestNumber> = \"PR-\" + Me.Case.CaseNumber;\n<PurchaseRequest.RequesterName> = Me.Case.WorkingCredential.FullName;"
+    },
+    {
+      "name": "CalculateTotal",
+      "label_fa": "محاسبهٔ مبلغ کل",
+      "kind": "on_save",
+      "attached_to": "RegisterRequest",
+      "code": "var total = 0;\nvar items = Me.getXPath(\"PurchaseRequest.Items\");\nfor (var i = 0; i < items.size(); i++)\n{\n    var item = items.get(i);\n    var line = CHelper.ToDecimal(item.getXPath(\"Quantity\")) * CHelper.ToDecimal(item.getXPath(\"UnitPrice\"));\n    item.setXPath(\"LineTotal\", line);\n    total = total + line;\n}\n<PurchaseRequest.TotalAmount> = total;"
+    },
+    {
+      "name": "ValidateRequest",
+      "label_fa": "اعتبارسنجی درخواست",
+      "kind": "validation",
+      "attached_to": "RegisterRequest",
+      "code": "if (Me.getXPath(\"count(PurchaseRequest.Items)\") == 0)\n{\n    CHelper.ThrowValidationError(\"حداقل یک قلم کالا باید ثبت شود.\");\n}\nif (<PurchaseRequest.NeededByDate> < DateTime.Today)\n{\n    CHelper.ThrowValidationError(\"تاریخ نیاز نمی‌تواند قبل از امروز باشد.\");\n}"
+    },
+    {
+      "name": "ManagerApproved",
+      "label_fa": "تأیید مدیر واحد",
+      "kind": "condition",
+      "attached_to": "Flow_ManagerDecision_Yes",
+      "code": "<PurchaseRequest.ManagerApproved> == true"
+    },
+    {
+      "name": "ValidateManagerComment",
+      "label_fa": "توضیح الزامی در صورت رد توسط مدیر واحد",
+      "kind": "validation",
+      "attached_to": "ManagerApproval",
+      "code": "if (<PurchaseRequest.ManagerApproved> != true && BAUtil.isNull(<PurchaseRequest.ManagerComment>))\n{\n    CHelper.ThrowValidationError(\"در صورت رد درخواست، ثبت توضیحات مدیر واحد الزامی است.\");\n}"
+    },
+    {
+      "name": "StampManagerDate",
+      "label_fa": "ثبت تاریخ تصمیم مدیر واحد",
+      "kind": "on_exit",
+      "attached_to": "ManagerApproval",
+      "code": "<PurchaseRequest.ManagerDecisionDate> = DateTime.Now;"
+    },
+    {
+      "name": "FinanceApproved",
+      "label_fa": "تأیید مدیر مالی",
+      "kind": "condition",
+      "attached_to": "Flow_FinanceDecision_Yes",
+      "code": "<PurchaseRequest.FinanceApproved> == true"
+    },
+    {
+      "name": "ValidateFinanceComment",
+      "label_fa": "توضیح الزامی در صورت رد توسط مدیر مالی",
+      "kind": "validation",
+      "attached_to": "FinanceApproval",
+      "code": "if (<PurchaseRequest.FinanceApproved> != true && BAUtil.isNull(<PurchaseRequest.FinanceComment>))\n{\n    CHelper.ThrowValidationError(\"در صورت رد درخواست، ثبت توضیحات مدیر مالی الزامی است.\");\n}"
+    },
+    {
+      "name": "StampFinanceDate",
+      "label_fa": "ثبت تاریخ تصمیم مدیر مالی",
+      "kind": "on_exit",
+      "attached_to": "FinanceApproval",
+      "code": "<PurchaseRequest.FinanceDecisionDate> = DateTime.Now;"
+    },
+    {
+      "name": "CeoApproved",
+      "label_fa": "تأیید مدیرعامل",
+      "kind": "condition",
+      "attached_to": "Flow_CeoDecision_Yes",
+      "code": "<PurchaseRequest.CeoApproved> == true"
+    },
+    {
+      "name": "ValidateCeoComment",
+      "label_fa": "توضیح الزامی در صورت رد توسط مدیرعامل",
+      "kind": "validation",
+      "attached_to": "CeoApproval",
+      "code": "if (<PurchaseRequest.CeoApproved> != true && BAUtil.isNull(<PurchaseRequest.CeoComment>))\n{\n    CHelper.ThrowValidationError(\"در صورت رد درخواست، ثبت توضیحات مدیرعامل الزامی است.\");\n}"
+    },
+    {
+      "name": "StampCeoDate",
+      "label_fa": "ثبت تاریخ تصمیم مدیرعامل",
+      "kind": "on_exit",
+      "attached_to": "CeoApproval",
+      "code": "<PurchaseRequest.CeoDecisionDate> = DateTime.Now;"
+    },
+    {
+      "name": "StampPurchaseDate",
+      "label_fa": "ثبت تاریخ خرید",
+      "kind": "on_exit",
+      "attached_to": "PerformPurchase",
+      "code": "<PurchaseRequest.PurchaseDate> = DateTime.Today;"
+    }
+  ]
+}
